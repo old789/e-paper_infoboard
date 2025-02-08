@@ -60,7 +60,7 @@ void check_updates(){
     if ( curr_crc != prev_crc ) {
       Debug("Need to redraw screen\r\n");
       prev_crc = curr_crc;
-    // write_to_display();
+      write_to_display();
     }
   }
 }

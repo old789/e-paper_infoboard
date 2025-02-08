@@ -80,9 +80,6 @@ bool read_data(){
       if ( (j + c) <= Imagesize ) {
         memcpy(UsualImage+j, buff, c);
         j+=c;
-#ifdef DBG_WIFI
-        Serial.printf("[HTTPS] %d bytes copied, %d total\r\n", c, j);
-#endif
       }
 
       if (len > 0) {
