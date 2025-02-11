@@ -1,3 +1,63 @@
+unsigned long read_info_file(){
+unsigned long payload;
+
+  if(WiFi.status() != WL_CONNECTED){
+#ifdef DBG_WIFI
+    Serial.println("WiFi Disconnected");
+#endif
+    wifi_init();
+  }
+
+#ifdef DBG_WIFI
+  Serial.println("Receiving infofile");
+#endif
+
+  NetworkClientSecure *client = new NetworkClientSecure;
+  if (!client) {
+#ifdef DBG_WIFI
+    Serial.println("Unable to create client");
+#endif
+    return(0);
+  }
+  client->setInsecure();
+  HTTPClient https;
+
+#ifdef DBG_WIFI
+  Serial.println("[HTTPS] begin...");
+#endif
+  if (!https.begin(*client, host, port, uri_info_file, true)) {  // HTTPS
+#ifdef DBG_WIFI
+    Serial.println("[HTTPS] Unable to connect");
+#endif
+    return(0);
+  }
+#ifdef DBG_WIFI
+  Serial.println("[HTTPS] GET...");
+#endif
+  int httpCode = https.GET();
+#ifdef DBG_WIFI
+  Serial.printf("[HTTPS] GET... code: %d\r\n", httpCode);
+#endif
+
+  if (httpCode < 0) {
+    return(0);
+  }
+  if ( httpCode != HTTP_CODE_OK ) {
+#ifdef DBG_WIFI
+    Serial.printf("[HTTPS] GET... failed, error: %s\r\n", https.errorToString(httpCode).c_str());
+#endif
+    return(0);
+  }
+  payload = https.getString().toInt();
+#ifdef DBG_WIFI
+    Serial.printf("[HTTPS] GET... success: %u\r\n", payload);
+#endif
+
+  https.end();
+  delete client;
+  return(payload);
+}
+
 bool read_data(){
 
   //Check WiFi connection status
@@ -28,7 +88,7 @@ bool read_data(){
 #ifdef DBG_WIFI
   Serial.println("[HTTPS] begin...");
 #endif
-  if (!https.begin(*client, host, port, uri, true)) {  // HTTPS
+  if (!https.begin(*client, host, port, uri_data, true)) {  // HTTPS
 #ifdef DBG_WIFI
     Serial.println("[HTTPS] Unable to connect");
 #endif

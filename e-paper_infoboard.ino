@@ -21,8 +21,9 @@
 UWORD Imagesize = ((EPD_7IN5_V2_WIDTH % 8 == 0) ? (EPD_7IN5_V2_WIDTH / 8 ) : (EPD_7IN5_V2_WIDTH / 8 + 1)) * EPD_7IN5_V2_HEIGHT;
 UBYTE *BlackImage;
 UBYTE *UsualImage;
-unsigned long curr_crc = 0;
-unsigned long prev_crc = 0;
+//unsigned long curr_crc = 0;
+//unsigned long prev_crc = 0;
+unsigned long prev_timestamp = 0;
 
 void check_updates();
 
@@ -52,14 +53,21 @@ void loop () {
 }
 
 void check_updates(){
+unsigned long new_timestamp = 0;
+bool rc = false;
+
   Debug("Regular update\r\n");
-  bool rc = read_data();
-  if ( rc ) {
-    curr_crc = ram_crc();
-    Serial.printf("CRC = %u prev CRC = %u\r\n", curr_crc, prev_crc);
-    if ( curr_crc != prev_crc ) {
+  new_timestamp = read_info_file();
+  if ( new_timestamp > 0 and new_timestamp != prev_timestamp ) {
+//    curr_crc = ram_crc();
+//    Serial.printf("CRC = %u prev CRC = %u\r\n", curr_crc, prev_crc);
+//    if ( curr_crc != prev_crc ) {
+//    prev_crc = curr_crc;
+    Serial.printf("newT = %u prevT = %u\r\n", new_timestamp, prev_timestamp);
+    rc = read_data();
+    if ( rc ) {
+      prev_timestamp = new_timestamp;
       Debug("Need to redraw screen\r\n");
-      prev_crc = curr_crc;
       write_to_display();
     }
   }
