@@ -2,59 +2,50 @@ unsigned long read_info_file(){
 unsigned long payload;
 
   if(WiFi.status() != WL_CONNECTED){
-#ifdef DBG_WIFI
-    Serial.println("WiFi Disconnected");
-#endif
+    if ( debug > 0 )
+      Serial.println("WiFi Disconnected");
     wifi_init();
   }
 
-#ifdef DBG_WIFI
-  Serial.println("Receiving infofile");
-#endif
+  if ( debug > 1 )
+    Serial.println("Receiving infofile");
 
   NetworkClientSecure *client = new NetworkClientSecure;
   if (!client) {
-#ifdef DBG_WIFI
-    Serial.println("Unable to create client");
-#endif
+    if ( debug > 0 )
+      Serial.println("Unable to create client");
     return(0);
   }
   client->setInsecure();
   HTTPClient https;
 
-#ifdef DBG_WIFI
-  Serial.println("[HTTPS] begin...");
-#endif
+  if ( debug > 4 )
+    Serial.println("[HTTPS] begin...");
   if (!https.begin(*client, host, port, uri1, true)) {  // HTTPS
-#ifdef DBG_WIFI
-    Serial.println("[HTTPS] Unable to connect");
-#endif
+    if ( debug > 0 )
+      Serial.println("[HTTPS] Unable to connect");
     return(0);
   }
   if ( http_auth > 0 ) {
     https.setAuthorization(http_user, http_passw);
   }
-#ifdef DBG_WIFI
-  Serial.println("[HTTPS] GET...");
-#endif
+  if ( debug > 4 )
+    Serial.println("[HTTPS] GET...");
   int httpCode = https.GET();
-#ifdef DBG_WIFI
-  Serial.printf("[HTTPS] GET... code: %d\r\n", httpCode);
-#endif
+  if ( debug > 4 )
+    Serial.printf("[HTTPS] GET... code: %d\r\n", httpCode);
 
   if (httpCode < 0) {
     return(0);
   }
   if ( httpCode != HTTP_CODE_OK ) {
-#ifdef DBG_WIFI
+  if ( debug > 0 )
     Serial.printf("[HTTPS] GET... failed, error: %s\r\n", https.errorToString(httpCode).c_str());
-#endif
     return(0);
   }
   payload = https.getString().toInt();
-#ifdef DBG_WIFI
+  if ( debug > 1 )
     Serial.printf("[HTTPS] GET... success: %u\r\n", payload);
-#endif
 
   https.end();
   delete client;
@@ -65,65 +56,55 @@ bool read_data(){
 
   //Check WiFi connection status
   if(WiFi.status() != WL_CONNECTED){
-#ifdef DBG_WIFI
-    Serial.println("WiFi Disconnected");
-#endif
+    if ( debug > 0 )
+      Serial.println("WiFi Disconnected");
     wifi_init();
   }
 
-#ifdef DBG_WIFI
-  Serial.println("Receive data");
-#endif
+  if ( debug > 1 )
+    Serial.println("Receive data");
 
   NetworkClientSecure *client = new NetworkClientSecure;
   if (!client) {
-#ifdef DBG_WIFI
-    Serial.println("Unable to create client");
-#endif
+    if ( debug > 0 )
+      Serial.println("Unable to create client");
     return(false);
   }
-  //client->setCACert(rootCACertificate);
   client->setInsecure();
 
   // Add a scoping block for HTTPClient https to make sure it is destroyed before NetworkClientSecure *client is
   HTTPClient https;
 
-#ifdef DBG_WIFI
-  Serial.println("[HTTPS] begin...");
-#endif
+  if ( debug > 4 )
+    Serial.println("[HTTPS] begin...");
   if (!https.begin(*client, host, port, uri2, true)) {  // HTTPS
-#ifdef DBG_WIFI
-    Serial.println("[HTTPS] Unable to connect");
-#endif
+    if ( debug > 0 )
+      Serial.println("[HTTPS] Unable to connect");
     return(false);
   }
-#ifdef DBG_WIFI
-  Serial.println("[HTTPS] GET...");
-#endif
+  if ( debug > 4 )
+    Serial.println("[HTTPS] GET...");
   // start connection and send HTTP header
   int httpCode = https.GET();
 
   // HTTP header has been send and Server response header has been handled
-#ifdef DBG_WIFI
-  Serial.printf("[HTTPS] GET... code: %d\r\n", httpCode);
-#endif
+  if ( debug > 4 )
+    Serial.printf("[HTTPS] GET... code: %d\r\n", httpCode);
   // httpCode will be negative on error
   if (httpCode < 0) {
     return(false);
   }
   // file found at server
   if ( httpCode != HTTP_CODE_OK ) {
-#ifdef DBG_WIFI
-    Serial.printf("[HTTPS] GET... failed, error: %s\r\n", https.errorToString(httpCode).c_str());
-#endif
+    if ( debug > 0 )
+      Serial.printf("[HTTPS] GET... failed, error: %s\r\n", https.errorToString(httpCode).c_str());
     return(false);
   }
 
   // get length of document (is -1 when Server sends no Content-Length header)
   int len = https.getSize();
-#ifdef DBG_WIFI
-  Serial.printf("[HTTPS] GET... size: %d\r\n", len);
-#endif
+  if ( debug > 4 )
+    Serial.printf("[HTTPS] GET... size: %d\r\n", len);
 
   // create buffer for read
   uint8_t buff[1024] = {0};
@@ -132,9 +113,8 @@ bool read_data(){
 
   // get tcp stream
   NetworkClient *stream = https.getStreamPtr();
-#ifdef DBG_WIFI
-  Serial.printf("[HTTPS] Download begun...\r\n");
-#endif
+  if ( debug > 4 )
+    Serial.println("[HTTPS] Download begun...");
 
   // read all data from server
   while (https.connected() && (len > 0 || len == -1)) {
@@ -144,10 +124,9 @@ bool read_data(){
     if (size) {
       int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
 
-#ifdef DBG_WIFI
       chunks++;
-      //Serial.printf("[HTTPS] copy %d done %d from %d\r\n", c, j, Imagesize);
-#endif
+      if ( debug > 8 )
+        Serial.printf("[HTTPS] copy %d done %d from %d\r\n", c, curr_len, Imagesize);
 
       if ( (curr_len + c) <= Imagesize ) {
         memcpy(UsualImage+curr_len, buff, c);
@@ -160,9 +139,8 @@ bool read_data(){
 
     }
   }
-#ifdef DBG_WIFI
-  Serial.printf("[HTTPS] downlod done: %u from %d by %u chunks\r\n", curr_len, Imagesize, chunks);
-#endif
+  if ( debug > 4 )
+    Serial.printf("[HTTPS] downlod done: %u from %d by %u chunks\r\n", curr_len, Imagesize, chunks);
   https.end();
 
   delete client;
@@ -172,9 +150,8 @@ bool read_data(){
 
 void wifi_init(){
   uint16_t wifi_tries = 0;
-#ifdef DBG_WIFI
-  Serial.print("Connecting to "); Serial.print(ssid); Serial.println(" ...");
-#endif
+  if ( debug > 1 )
+    Serial.printf("Connecting to %s ...\r\n", ssid); 
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, passw);             // Connect to the network
@@ -183,17 +160,15 @@ void wifi_init(){
   while (WiFi.status() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
     delay(100);
     i++;
-#ifdef DBG_WIFI
-    Serial.print(i); Serial.print(' ');
-#endif
+    if ( debug > 1 )
+      Serial.printf("%d ",i);
     if ( i > 1500 ) {  // if don't connect - wait, then next try
       if ( ++wifi_tries > 3 ) {
         ESP.restart();
       }
       delay(150000);
-#ifdef DBG_WIFI
-      Serial.print("Try "); Serial.print(wifi_tries); Serial.println(" connect to WiFi");
-#endif
+      if ( debug > 1 )
+        Serial.printf("Try %d connect to WiFi\r\n",wifi_tries);
     }
   }
 
@@ -204,10 +179,6 @@ void wifi_init(){
   WiFi.setAutoReconnect(true);
   WiFi.persistent(true);
 
-#ifdef DBG_WIFI
-  Serial.println('\n');
-  Serial.println("Connection established!");
-  Serial.print("IP address: ");Serial.println(WiFi.localIP());
-  Serial.print("RSSI: ");Serial.println(WiFi.RSSI());
-#endif
+  if ( debug > 0 )
+    Serial.printf("\r\nConnection established! IP address: %s, RSSI: $d\r\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
 }

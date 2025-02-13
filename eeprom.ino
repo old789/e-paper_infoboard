@@ -1,8 +1,6 @@
 
 void eeprom_save(){
-#ifdef DBG_SERIAL
   const char msg[] = "Config saved to EEPROM";
-#endif
   EEPROM.put(0, mark);
   EEPROM.put(PT_DEV_NAME, dev_name);
   EEPROM.put(PT_SSID, ssid);
@@ -17,9 +15,8 @@ void eeprom_save(){
   EEPROM.put(PT_DEBUG, debug);
   EEPROM.put(PT_CRC, ram_crc());
   EEPROM.commit();
-#ifdef DBG_SERIAL
+  if ( debug > 0 )
     Serial.println(msg);
-#endif
 }
 
 unsigned long ram_crc() {
@@ -34,12 +31,9 @@ unsigned long ram_crc() {
   byte *buf = (byte*)malloc( SIZE_EEPROM + 8 );
 
   if ( ! buf ){
-    if ( enable_cli )
+    if ( enable_cli or debug > 0 )
       Serial.println(msg);
-#ifdef DBG_SERIAL
-    Serial.println(msg);
-#endif
-    return(0);
+  return(0);
   }
 
   memset(buf, 0, SIZE_EEPROM + 8);
@@ -78,12 +72,9 @@ const char msg3[] = "EEPROM read successfully";
 
   EEPROM.get(0, m);
   if ( m != mark ) {
-    if ( enable_cli ) {
+    if ( enable_cli or debug > 0 ) {
       Serial.print(msg11);Serial.print(mark,HEX);Serial.print(msg12);Serial.print(m,HEX);Serial.println(msg13);
     }
-#ifdef DBG_SERIAL
-    Serial.print(msg11);Serial.print(mark,HEX);Serial.print(msg12);Serial.print(m,HEX);Serial.println(msg13);
-#endif
     return(false);
   }
 
@@ -101,24 +92,18 @@ const char msg3[] = "EEPROM read successfully";
   EEPROM.get(PT_DEBUG, debug);
 
   if ( crc != ram_crc() ){
-    if ( enable_cli )
+    if ( enable_cli or debug > 0 )
       Serial.println(msg2);
-#ifdef DBG_SERIAL
-    Serial.println(msg2);
-#endif
     return(false);
   }
-#ifdef DBG_SERIAL
+  if ( debug > 0 )
     Serial.println(msg3);
-#endif
   return(true);
 }
 
 bool is_conf_correct(){
-#ifdef DBG_SERIAL
   const char msg1[] = "Config incorrect";
   const char msg2[] = "Config good";
-#endif
 
   if (( strlen(ssid) == 0 ) ||
       ( strlen(passw) == 0 ) ||
@@ -127,23 +112,20 @@ bool is_conf_correct(){
       ( strlen(uri1) == 0 ) ||
       ( strlen(uri2) == 0 )
       ){
-#ifdef DBG_SERIAL
+    if ( debug > 0 )
       Serial.println(msg1);
-#endif
-      return(false);
+    return(false);
   } else if ( http_auth == 1 ) {
     if (( strlen(http_user) == 0 ) ||
         ( strlen(http_passw) == 0 )
         ){
-#ifdef DBG_SERIAL
-    Serial.println(msg1);
-#endif
-    return(false);
+      if ( debug > 0 )
+        Serial.println(msg1);
+      return(false);
     }
   }
 
-#ifdef DBG_SERIAL
+  if ( debug > 0 )
     Serial.println(msg2);
-#endif
   return(true);
 }

@@ -1,6 +1,3 @@
-#define DBG_WIFI    // because "DEBUG_WIFI" defined in a WiFiClient library
-#define DBG_SERIAL
-
 #include "DEV_Config.h"
 //#include "EPD.h"
 #include "utility/Debug.h"
@@ -87,15 +84,17 @@ Command cmdHelp;
 void setup (){
   DEV_Module_Init();
   DEV_Delay_ms(200);
-  Debug("\r\n\r\nSerial debug started\r\n");
+  if ( debug > 0 )
+    Serial.println("\r\n\r\nSerial started");
   if ((UsualImage = (UBYTE *)malloc(Imagesize)) == NULL) {
-    Debug("Failed to apply memory for usual image...\r\n");
+    Serial.println("Failed to apply memory for usual image...\r\n");
     while (1);
   }
 
   pinMode(BUTTON,  INPUT_PULLUP);
 
-  Debug("Init EEPROM\r\n");
+  if ( debug > 0 )
+    Serial.println("Init EEPROM");
   EEPROM.begin(384);
 
   if ( ! eeprom_read() ) {
@@ -107,7 +106,7 @@ void setup (){
   }
 
   if (eeprom_bad)
-    Serial.println("\nEEPROM error or bad config");
+    Serial.println("\r\nEEPROM error or bad config");
 
   enable_cli = is_button_pressed();
 
@@ -143,29 +142,34 @@ void check_updates(){
 unsigned long new_timestamp = 0;
 bool rc = false;
 
-  Serial.printf("Regular update %s\r\n", str_uptime);
+  if ( debug > 0 )
+    Serial.printf("Regular update %s\r\n", str_uptime);
   new_timestamp = read_info_file();
   if ( new_timestamp > 0 and new_timestamp != prev_timestamp ) {
     rc = read_data();
     if ( rc ) {
       prev_timestamp = new_timestamp;
-      Debug("Need to redraw screen\r\n");
+      if ( debug > 0 )
+        Serial.println("Need to redraw screen");
       write_to_display();
     }
   }
 }
 
 void write_to_display (){
-  Debug("e-Paper Init and Clear...\r\n");
+  if ( debug > 4 )
+    Serial.println("e-Paper Init and Clear...");
   EPD_7IN5_V2_Init();
   EPD_7IN5_V2_Clear();
   DEV_Delay_ms(500);
 
-  Debug("EPD_7IN5_V2_Display\r\n");
+  if ( debug > 4 )
+    Serial.println("Draw image...");
   EPD_7IN5_V2_Display(UsualImage);
   DEV_Delay_ms(500);
 
-  Debug("Goto Sleep...\r\n");
+  if ( debug > 4 )
+    Serial.println("e-Paper Goto Sleep...");
   EPD_7IN5_V2_Sleep();
 }
 
