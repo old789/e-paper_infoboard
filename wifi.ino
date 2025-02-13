@@ -124,10 +124,14 @@ bool read_data(){
 
   // create buffer for read
   uint8_t buff[1024] = {0};
-  uint32_t j=0;
+  uint32_t curr_len=0;
+  uint32_t chunks=0;
 
   // get tcp stream
   NetworkClient *stream = https.getStreamPtr();
+#ifdef DBG_WIFI
+  Serial.printf("[HTTPS] Download begun...\r\n");
+#endif
 
   // read all data from server
   while (https.connected() && (len > 0 || len == -1)) {
@@ -137,17 +141,25 @@ bool read_data(){
     if (size) {
       int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
 
-      if ( (j + c) <= Imagesize ) {
-        memcpy(UsualImage+j, buff, c);
-        j+=c;
+#ifdef DBG_WIFI
+      chunks++;
+      //Serial.printf("[HTTPS] copy %d done %d from %d\r\n", c, j, Imagesize);
+#endif
+
+      if ( (curr_len + c) <= Imagesize ) {
+        memcpy(UsualImage+curr_len, buff, c);
+        curr_len+=c;
       }
 
       if (len > 0) {
         len -= c;
       }
+
     }
   }
-
+#ifdef DBG_WIFI
+  Serial.printf("[HTTPS] downlod done: %u from %d by %u chunks\r\n", curr_len, Imagesize, chunks);
+#endif
   https.end();
 
   delete client;
