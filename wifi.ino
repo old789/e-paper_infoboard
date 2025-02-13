@@ -25,7 +25,7 @@ unsigned long payload;
 #ifdef DBG_WIFI
   Serial.println("[HTTPS] begin...");
 #endif
-  if (!https.begin(*client, host, port, uri_info_file, true)) {  // HTTPS
+  if (!https.begin(*client, host, port, uri1, true)) {  // HTTPS
 #ifdef DBG_WIFI
     Serial.println("[HTTPS] Unable to connect");
 #endif
@@ -88,7 +88,7 @@ bool read_data(){
 #ifdef DBG_WIFI
   Serial.println("[HTTPS] begin...");
 #endif
-  if (!https.begin(*client, host, port, uri_data, true)) {  // HTTPS
+  if (!https.begin(*client, host, port, uri2, true)) {  // HTTPS
 #ifdef DBG_WIFI
     Serial.println("[HTTPS] Unable to connect");
 #endif
