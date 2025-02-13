@@ -73,7 +73,7 @@ const char msg12[] = "H but read ";
 const char msg13[] = "H";
 const char msg2[] = "EEPROM read ERROR: incorrect crc";
 #ifdef DBG_SERIAL
-const char msg3[] = "EEPROM read successful";
+const char msg3[] = "EEPROM read successfully";
 #endif
 
   EEPROM.get(0, m);
