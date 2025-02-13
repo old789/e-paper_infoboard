@@ -14,15 +14,20 @@
 
 #include "TickTwo.h"    // https://github.com/sstaub/TickTwo
 
+#include "uptime.h"     // https://github.com/YiannisBourkelis/Uptime-Library
+
 #include "config.h"
 
 UWORD Imagesize = ((EPD_7IN5_V2_WIDTH % 8 == 0) ? (EPD_7IN5_V2_WIDTH / 8 ) : (EPD_7IN5_V2_WIDTH / 8 + 1)) * EPD_7IN5_V2_HEIGHT;
 UBYTE *UsualImage;
 unsigned long prev_timestamp = 0;
+char str_uptime[25] = "0d0h0m0s";
 
 void check_updates();
+void count_uptime();
 
 TickTwo timer1( check_updates, 180000);
+TickTwo timer2( count_uptime, 1000);
 
 void setup (){
   DEV_Module_Init();
@@ -35,17 +40,19 @@ void setup (){
   wifi_init();
 //  check_updates();
   timer1.start();
+  timer2.start();
 }
 
 void loop () {
   timer1.update();
+  timer2.update();
 }
 
 void check_updates(){
 unsigned long new_timestamp = 0;
 bool rc = false;
 
-  Debug("Regular update\r\n");
+  Serial.printf("Regular update %s\r\n", str_uptime);
   new_timestamp = read_info_file();
   if ( new_timestamp > 0 and new_timestamp != prev_timestamp ) {
     rc = read_data();
@@ -69,4 +76,10 @@ void write_to_display (){
 
   Debug("Goto Sleep...\r\n");
   EPD_7IN5_V2_Sleep();
+}
+
+void count_uptime() {
+  uptime::calculateUptime();
+  memset(str_uptime, 0, sizeof(str_uptime));
+  sprintf( str_uptime, "%ud%uh%um%us", uptime::getDays(), uptime::getHours(), uptime::getMinutes(), uptime::getSeconds() );
 }
