@@ -31,6 +31,9 @@ unsigned long payload;
 #endif
     return(0);
   }
+  if ( http_auth > 0 ) {
+    https.setAuthorization(http_user, http_passw);
+  }
 #ifdef DBG_WIFI
   Serial.println("[HTTPS] GET...");
 #endif
