@@ -1,14 +1,19 @@
+
+// needs for Waveshare devboard
 #include "DEV_Config.h"
-//#include "EPD.h"
+// disable e-Paper debug messages here --v
 #include "utility/Debug.h"
-#ifndef __DEBUG_H
-#define Debug(__info)
-#endif
+// end Waveshare devboard
+
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <NetworkClientSecure.h>
+
+// needs for Waveshare devboard
+//#include "EPD.h"
 #include "utility/EPD_7in5_V2.h"
 #include <stdlib.h>
+// end Waveshare devboard
 
 #include <EEPROM.h>
 
@@ -49,6 +54,13 @@ uint8_t http_auth = 0;
 char http_user[33] = {0};
 char http_passw[33] = {0};
 uint8_t debug = 0;
+
+/*
+ * debug 0 - only critical messages
+ * debug 1 - error messages
+ * debug 2..3 - info messages
+ * debug >4 - debug messages
+ */
 
 #define PT_DEV_NAME         sizeof(mark)
 #define PT_SSID             PT_DEV_NAME + sizeof(dev_name)

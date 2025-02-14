@@ -66,9 +66,7 @@ const char msg11[] = "EEPROM read ERROR: incorrect marker, need ";
 const char msg12[] = "H but read ";
 const char msg13[] = "H";
 const char msg2[] = "EEPROM read ERROR: incorrect crc";
-#ifdef DBG_SERIAL
 const char msg3[] = "EEPROM read successfully";
-#endif
 
   EEPROM.get(0, m);
   if ( m != mark ) {

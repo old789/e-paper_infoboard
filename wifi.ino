@@ -151,7 +151,7 @@ bool read_data(){
 void wifi_init(){
   uint16_t wifi_tries = 0;
   if ( debug > 1 )
-    Serial.printf("Connecting to %s ...\r\n", ssid); 
+    Serial.printf("Connecting to %s ...\r\n", ssid);
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, passw);             // Connect to the network
@@ -180,5 +180,5 @@ void wifi_init(){
   WiFi.persistent(true);
 
   if ( debug > 0 )
-    Serial.printf("\r\nConnection established! IP address: %s, RSSI: $d\r\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
+    Serial.printf("\r\nConnection established! IP address: %s, RSSI: %d\r\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
 }
